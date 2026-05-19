@@ -62,7 +62,8 @@ public class ConsoleUI {
 
         int rows = Math.max(moves.size(), panelLines.size() + 1);
         for (int i = 0; i < rows; i++) {
-            String left = i < moves.size() ? truncate(padRight(moves.get(i), LOG_WIDTH), LOG_WIDTH) : padRight("", LOG_WIDTH);
+            String left = i < moves.size() ? truncate(padRight(moves.get(i), LOG_WIDTH), LOG_WIDTH)
+                    : padRight("", LOG_WIDTH);
             String right;
             if (i == 0) {
                 right = truncate(padRight(roundHeader, GAME_WIDTH), GAME_WIDTH);

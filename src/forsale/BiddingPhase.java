@@ -23,7 +23,8 @@ public class BiddingPhase {
         ui.logMove("Phase 1: Bidding begins");
         ui.clearPanel();
         ui.println("=== PHASE 1: BIDDING ===");
-        ui.println(GameRules.BIDDING_ROUNDS + " rounds, " + GameRules.CARDS_PER_ROUND + " cards each (one per player).");
+        ui.println(
+                GameRules.BIDDING_ROUNDS + " rounds, " + GameRules.CARDS_PER_ROUND + " cards each (one per player).");
         ui.println("20 total property cards: #1–20 (higher value = more desirable).");
         ui.println("Start: " + Player.formatMoney(Game.STARTING_CASH_THOUSANDS));
         ui.println("Pass → lowest card, half bid back.");
