@@ -21,11 +21,12 @@ public final class GameHelp {
             "  PASS (0): take the lowest card left; get half your bid back.",
             "  LAST BIDDER: takes the highest card; pays full bid to bank.",
             "",
-            "PHASE 2 — SELLING (until all cards gone)",
-            "  Checks on table, highest value first.",
-            "  For EACH check: pick a property you won.",
-            "  All reveal — highest property # wins that check.",
-            "  Next check, then next, until cards run out.",
+            "PHASE 2 — SELLING (5 batches)",
+            "  Each batch: 4 checks on the table (best first).",
+            "  Pick one property you won in Phase 1.",
+            "  All reveal; ranks by property # (high to low).",
+            "  Rank 1 wins the top check, rank 2 the next, etc.",
+            "  Check value is added to your balance.",
             "  Winner = highest balance (checks + coins).",
             "",
             "Left column = move log. Right column = current screen.",
@@ -42,21 +43,23 @@ public final class GameHelp {
             "",
             "Bidding (your turn):",
             "  Enter     — bid the minimum (beats last bid by $1,000)",
-            "  0         — pass",
-            "  pass      — pass",
+            "  0 / pass  — pass",
             "  <number>  — total bid in thousands (3 = " + Currency.format(3) + ")",
-            "  help      — show bidding help again",
+            "  help      — open this help menu",
             "",
             "Selling (your turn):",
-            "  <number>  — pick property (1 = your highest card)",
+            "  <number>  — pick property by list # (1 = highest)",
+            "  help      — open this help menu",
             "",
             "Anywhere:",
+            "  help      — open help, then continue playing",
             "  Enter     — continue when asked",
         };
     }
 
-    public static void showOverview(ConsoleUI ui) {
-        ui.logMove("Help shown");
+    /** Full rules + commands; press Enter to return to the game. */
+    public static void showHelpMenu(ConsoleUI ui) {
+        ui.logMove("Help menu opened");
         ui.clearPanel();
         for (String line : overviewLines()) {
             ui.panelLine(line);
@@ -65,18 +68,18 @@ public final class GameHelp {
         for (String line : commandLines()) {
             ui.panelLine(line);
         }
+        ui.panelLine("");
+        ui.panelLine("Press Enter to return to the game...");
         ui.refresh();
-        ui.pressEnterToContinue();
+        ui.readLineAllowHelp(false);
+    }
+
+    public static void showOverview(ConsoleUI ui) {
+        showHelpMenu(ui);
     }
 
     public static void showBiddingHelp(ConsoleUI ui) {
-        ui.clearPanel();
-        ui.panelLine("Bidding help:");
-        ui.panelLine("  Enter  → minimum bid shown on screen");
-        ui.panelLine("  0      → pass");
-        ui.panelLine("  pass   → pass");
-        ui.panelLine("  number → total bid (3 = " + Currency.format(3) + ")");
-        ui.refresh();
+        showHelpMenu(ui);
     }
 
     private GameHelp() {}

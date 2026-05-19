@@ -3,24 +3,15 @@ package forsale;
 import java.util.Collections;
 import java.util.List;
 
-/** Information when picking a property to compete for one check on the table. */
+/** Information when picking a property for one selling batch (4 checks on table). */
 public class SellContext {
     private final Player player;
-    private final List<CheckCard> allChecksThisBatch;
-    private final CheckCard currentCheck;
-    private final int checkIndex;
+    private final List<CheckCard> tableChecks;
     private final int batchNumber;
 
-    public SellContext(
-            Player player,
-            List<CheckCard> allChecksThisBatch,
-            CheckCard currentCheck,
-            int checkIndex,
-            int batchNumber) {
+    public SellContext(Player player, List<CheckCard> tableChecks, int batchNumber) {
         this.player = player;
-        this.allChecksThisBatch = List.copyOf(allChecksThisBatch);
-        this.currentCheck = currentCheck;
-        this.checkIndex = checkIndex;
+        this.tableChecks = List.copyOf(tableChecks);
         this.batchNumber = batchNumber;
     }
 
@@ -28,31 +19,19 @@ public class SellContext {
         return player;
     }
 
-    public List<CheckCard> getAllChecksThisBatch() {
-        return Collections.unmodifiableList(allChecksThisBatch);
-    }
-
-    public CheckCard getCurrentCheck() {
-        return currentCheck;
-    }
-
-    public int getCurrentCheckGrands() {
-        return currentCheck.getValueGrands();
-    }
-
-    public int getCheckIndex() {
-        return checkIndex;
+    public List<CheckCard> getTableChecks() {
+        return Collections.unmodifiableList(tableChecks);
     }
 
     public int getBatchNumber() {
         return batchNumber;
     }
 
-    public boolean isFirstCheckInBatch() {
-        return checkIndex == 0;
+    public int highestCheckGrands() {
+        return tableChecks.get(0).getValueGrands();
     }
 
-    public boolean isLastCheckInBatch() {
-        return checkIndex == allChecksThisBatch.size() - 1;
+    public int lowestCheckGrands() {
+        return tableChecks.get(tableChecks.size() - 1).getValueGrands();
     }
 }

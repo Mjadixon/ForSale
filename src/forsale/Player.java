@@ -61,11 +61,11 @@ public class Player {
     }
 
     /** Adds a check earned in Phase 2 (value in Grands). */
-    public void addCheck(int valueGrands) {
-        if (valueGrands < 0) {
+    public void addCheck(int valueThousands) {
+        if (valueThousands < 0) {
             throw new IllegalArgumentException("Check value cannot be negative.");
         }
-        checks.add(valueGrands);
+        checks.add(valueThousands);
     }
 
     public int getCheckTotalThousands() {

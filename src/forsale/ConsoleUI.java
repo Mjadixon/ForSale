@@ -61,39 +61,58 @@ public class ConsoleUI {
         System.out.flush();
     }
 
+    /**
+     * Reads a line; if allowHelp and user types help, opens help menu and reads again.
+     */
+    public String readLineAllowHelp(boolean allowHelp) {
+        while (true) {
+            String line = scanner.nextLine().trim();
+            if (allowHelp && line.equalsIgnoreCase("help")) {
+                GameHelp.showHelpMenu(this);
+                continue;
+            }
+            return line;
+        }
+    }
+
     public void pressEnterToContinue() {
-        panelLine("");
-        panelLine("Press Enter to continue...");
-        refresh();
-        scanner.nextLine();
+        while (true) {
+            panelLine("");
+            panelLine("Press Enter to continue (type help for rules)...");
+            refresh();
+            String line = readLineAllowHelp(true);
+            if (line.isEmpty()) {
+                return;
+            }
+            logMove("Press Enter to continue");
+        }
     }
 
     public int readIntInRange(String prompt, int min, int max) {
         while (true) {
             clearPanel();
-            panelLine(prompt + " (" + min + "-" + max + "):");
+            panelLine(prompt + " (" + min + "-" + max + ", help):");
             refresh();
 
-            if (scanner.hasNextInt()) {
-                int value = scanner.nextInt();
-                scanner.nextLine();
+            String line = readLineAllowHelp(true);
+            try {
+                int value = Integer.parseInt(line);
                 if (value >= min && value <= max) {
                     return value;
                 }
-            } else {
-                scanner.nextLine();
+            } catch (NumberFormatException ignored) {
             }
-            logMove("Invalid number entered");
+            logMove("Invalid number");
         }
     }
 
     public String readNonEmptyLine(String prompt) {
         while (true) {
             clearPanel();
-            panelLine(prompt);
+            panelLine(prompt + " (help):");
             refresh();
 
-            String line = scanner.nextLine().trim();
+            String line = readLineAllowHelp(true);
             if (!line.isEmpty()) {
                 return line;
             }
@@ -104,10 +123,10 @@ public class ConsoleUI {
     public boolean readYesNo(String prompt) {
         while (true) {
             clearPanel();
-            panelLine(prompt + " (y/n):");
+            panelLine(prompt + " (y/n, help):");
             refresh();
 
-            String answer = scanner.nextLine().trim().toLowerCase();
+            String answer = readLineAllowHelp(true).toLowerCase();
             if (answer.equals("y") || answer.equals("yes")) {
                 return true;
             }
@@ -118,10 +137,6 @@ public class ConsoleUI {
         }
     }
 
-    /**
-     * Enter = minimum legal bid (auto-raises over the previous bid).
-     * 0 or "pass" = pass. Number = total bid in thousands ($3 = 3).
-     */
     public int readBidOrPass(Player player, int minimumBidThousands, int highestBidThousands, boolean soleBidder) {
         while (true) {
             if (soleBidder) {
@@ -141,21 +156,16 @@ public class ConsoleUI {
             panelLine("Enter     = bid " + Player.formatMoney(minimumBidThousands));
             panelLine("0 / pass  = pass");
             panelLine("number    = higher total bid (thousands)");
-            panelLine("help      = commands");
+            panelLine("help      = rules menu");
             refresh();
 
-            String line = scanner.nextLine().trim().toLowerCase();
+            String line = readLineAllowHelp(true).toLowerCase();
 
             if (line.isEmpty()) {
                 if (canAffordBid(player, minimumBidThousands)) {
                     return minimumBidThousands;
                 }
                 logMove("Cannot afford " + Currency.format(minimumBidThousands));
-                continue;
-            }
-
-            if (line.equals("help")) {
-                GameHelp.showBiddingHelp(this);
                 continue;
             }
 
@@ -176,12 +186,12 @@ public class ConsoleUI {
             }
 
             if (input < minimumBidThousands) {
-                logMove("Below minimum — use Enter for " + Currency.format(minimumBidThousands));
+                logMove("Below minimum bid");
                 continue;
             }
 
             if (!canAffordBid(player, input)) {
-                logMove("Cannot afford " + Currency.format(input));
+                logMove("Cannot afford bid");
                 continue;
             }
 
@@ -194,33 +204,32 @@ public class ConsoleUI {
     }
 
     public void showTable(List<PropertyCard> tableCards) {
-        panelLine("Table (low → high):");
+        panelLine("Table (low -> high):");
         for (int i = 0; i < tableCards.size(); i++) {
             panelLine("  " + (i + 1) + ". " + tableCards.get(i));
         }
         refresh();
     }
 
-    /** Shows every player's coins (and active bid) after a bid or pass. */
     public void showAllCheckTotals(List<GameParticipant> participants) {
-        panelLine("--- Check totals (Phase 2) ---");
+        panelLine("--- Check earnings ---");
         for (GameParticipant participant : participants) {
             Player player = participant.getPlayer();
             panelLine("  " + player.getName() + ": "
-                    + Player.formatMoney(player.getCheckTotalThousands()) + " in checks");
+                    + Player.formatMoney(player.getCheckTotalThousands()));
         }
         refresh();
     }
 
+    /** Coins + checks = full balance for every player. */
     public void showAllBalances(List<GameParticipant> participants) {
         panelLine("--- Balances ---");
         for (GameParticipant participant : participants) {
             Player player = participant.getPlayer();
-            String line = "  " + player.getName() + ": " + Player.formatMoney(player.getCash());
-            if (player.getCommittedBid() > 0) {
-                line += "  (in bid: " + Player.formatMoney(player.getCommittedBid()) + ")";
-            }
-            panelLine(line);
+            panelLine("  " + player.getName() + ": "
+                    + Player.formatMoney(player.getTotalWealthThousands())
+                    + "  (coins " + Player.formatMoney(player.getCash())
+                    + ", checks " + Player.formatMoney(player.getCheckTotalThousands()) + ")");
         }
         refresh();
     }
@@ -240,24 +249,41 @@ public class ConsoleUI {
                 + " | Props: " + props);
     }
 
-    public PropertyCard readPropertyChoice(Player player, CheckCard checkOnTable) {
+    public PropertyCard readPropertyChoice(Player player, SellContext context) {
         while (true) {
             clearPanel();
-            panelLine("Win this check: " + checkOnTable);
-            panelLine("Your cards (highest to lowest) — high # wins:");
+            panelLine("Batch " + context.getBatchNumber() + " of " + GameRules.SELLING_ROUNDS);
+            panelLine("Checks this batch (rank 1 = best):");
+            List<CheckCard> checks = context.getTableChecks();
+            for (int i = 0; i < checks.size(); i++) {
+                panelLine("  Rank " + (i + 1) + ": " + checks.get(i));
+            }
+            panelLine("");
+            panelLine("Your balance: " + Player.formatMoney(player.getTotalWealthThousands()));
+            panelLine("Your properties (pick one to play):");
             List<PropertyCard> properties = player.getPropertiesHighToLow();
             for (int i = 0; i < properties.size(); i++) {
                 panelLine("  " + (i + 1) + ". " + properties.get(i));
             }
-            panelLine("Pick a card to play (1 = your best):");
+            panelLine("");
+            panelLine("Enter number to select (1 = highest):");
+            panelLine("help = rules menu");
             refresh();
 
-            if (!scanner.hasNextInt()) {
-                scanner.nextLine();
+            String line = readLineAllowHelp(true).toLowerCase();
+            if (line.isEmpty()) {
+                logMove("Pick a property number");
                 continue;
             }
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+
+            int choice;
+            try {
+                choice = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                logMove("Invalid property #");
+                continue;
+            }
+
             if (choice >= 1 && choice <= properties.size()) {
                 return properties.get(choice - 1);
             }
@@ -278,9 +304,9 @@ public class ConsoleUI {
         }
 
         println(player.getName() + ":");
-        println("  Checks: " + checkList);
-        println("  Coins:  " + Player.formatMoney(player.getCash()));
-        println("  Total:  " + Player.formatMoney(player.getTotalWealthThousands()));
+        println("  Checks earned: " + checkList);
+        println("  Coins left:    " + Player.formatMoney(player.getCash()));
+        println("  Balance:       " + Player.formatMoney(player.getTotalWealthThousands()));
     }
 
     private static void clearScreen() {
@@ -299,6 +325,6 @@ public class ConsoleUI {
         if (text.length() <= width) {
             return text;
         }
-        return text.substring(0, width - 1) + "…";
+        return text.substring(0, width - 1) + "...";
     }
 }

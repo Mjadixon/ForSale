@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * AI for bidding and selling. When selling, plays high properties for big checks
- * and lower properties for small checks (high to low over the phase).
+ * AI for bidding and selling.
  */
 public class AiController implements PlayerController, SellController {
     private final Random random;
@@ -99,21 +98,19 @@ public class AiController implements PlayerController, SellController {
         List<PropertyCard> hand = context.getPlayer().getPropertiesHighToLow();
         PropertyCard highest = hand.get(0);
         PropertyCard lowest = hand.get(hand.size() - 1);
-        int check = context.getCurrentCheckGrands();
+        int topCheck = context.highestCheckGrands();
+        int batch = context.getBatchNumber();
 
-        if (context.isFirstCheckInBatch() || check >= 14) {
+        if (batch <= 2 || topCheck >= 14) {
             return highest;
         }
-        if (context.isLastCheckInBatch() || check <= 5) {
+        if (batch >= 4 || topCheck <= 5) {
             return lowest;
         }
-        if (check >= 10) {
+        if (topCheck >= 10) {
             return hand.get(Math.min(1, hand.size() - 1));
         }
-        if (check <= 7) {
-            return hand.get(hand.size() - 1);
-        }
-        return hand.get(random.nextInt(hand.size()));
+        return hand.get(hand.size() / 2);
     }
 
     private int fairBidForProperty(int propertyRank, int tableAvg, int bidders) {

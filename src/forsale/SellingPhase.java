@@ -3,8 +3,7 @@ package forsale;
 import java.util.List;
 
 /**
- * Phase 2: for each check on the table (high to low), players pick a property;
- * highest property wins that check. Continues until all properties are gone.
+ * Phase 2: exactly five batches. Each batch ranks properties and awards four checks.
  */
 public class SellingPhase {
     private final ConsoleUI ui;
@@ -23,28 +22,25 @@ public class SellingPhase {
         ui.logMove("Phase 2: Selling begins");
         ui.clearPanel();
         ui.println("=== PHASE 2: SELLING ===");
-        ui.println("Checks go on the table from highest to lowest.");
-        ui.println("For each check, pick one property you won in Phase 1.");
-        ui.println("All reveal: highest property # wins that check.");
-        ui.println("Keep going until every property card is gone.");
-        ui.println("Highest balance (checks + coins) wins the game.");
+        ui.println("5 batches of checks (same as 5 bidding rounds).");
+        ui.println("Each batch: 4 checks on the table.");
+        ui.println("Select a property; all reveal.");
+        ui.println("Highest property rank wins the top check, and so on.");
+        ui.println("Check amounts are added to your balance.");
+        ui.println("Highest balance at the end wins.");
 
         if (participants.stream().anyMatch(GameParticipant::isHuman)) {
             ui.pressEnterToContinue();
         }
 
-        int batch = 1;
-        while (anyPlayerHasProperties() && checkDeck.remaining() > 0) {
-            if (!roundRunner.playBatch(participants, checkDeck, batch)) {
-                break;
-            }
-            batch++;
+        for (int batch = 1; batch <= GameRules.SELLING_ROUNDS; batch++) {
+            ui.logMove("Sell batch " + batch + "/" + GameRules.SELLING_ROUNDS);
+            roundRunner.playBatch(participants, checkDeck, batch);
         }
 
-        ui.logMove("Phase 2 complete — all properties sold");
+        ui.logMove("Phase 2 complete");
         ui.clearPanel();
         ui.println("=== SELLING DONE ===");
-        ui.println("All property cards have been played.");
         ui.println("Final balances:");
         for (GameParticipant participant : participants) {
             ui.showWealthBreakdown(participant.getPlayer());
@@ -53,14 +49,5 @@ public class SellingPhase {
         if (participants.stream().anyMatch(GameParticipant::isHuman)) {
             ui.pressEnterToContinue();
         }
-    }
-
-    private boolean anyPlayerHasProperties() {
-        for (GameParticipant participant : participants) {
-            if (participant.getPlayer().hasProperties()) {
-                return true;
-            }
-        }
-        return false;
     }
 }
