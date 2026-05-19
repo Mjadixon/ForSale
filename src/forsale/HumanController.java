@@ -23,6 +23,6 @@ public class HumanController implements PlayerController, SellController {
 
     @Override
     public PropertyCard chooseProperty(SellContext context) {
-        return ui.readPropertyChoice(context.getPlayer());
+        return ui.readPropertyChoice(context.getPlayer(), context.getCurrentCheck());
     }
 }

@@ -2,6 +2,7 @@ package forsale;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -34,6 +35,17 @@ public class Player {
 
     public List<PropertyCard> getProperties() {
         return Collections.unmodifiableList(properties);
+    }
+
+    /** Properties still held, sorted highest to lowest (best first). */
+    public List<PropertyCard> getPropertiesHighToLow() {
+        List<PropertyCard> sorted = new ArrayList<>(properties);
+        sorted.sort(Comparator.reverseOrder());
+        return Collections.unmodifiableList(sorted);
+    }
+
+    public boolean hasProperties() {
+        return !properties.isEmpty();
     }
 
     public List<Integer> getChecks() {

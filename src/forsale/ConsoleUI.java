@@ -240,15 +240,16 @@ public class ConsoleUI {
                 + " | Props: " + props);
     }
 
-    public PropertyCard readPropertyChoice(Player player) {
+    public PropertyCard readPropertyChoice(Player player, CheckCard checkOnTable) {
         while (true) {
             clearPanel();
-            panelLine("Your properties (high # wins):");
-            List<PropertyCard> properties = player.getProperties();
+            panelLine("Win this check: " + checkOnTable);
+            panelLine("Your cards (highest to lowest) — high # wins:");
+            List<PropertyCard> properties = player.getPropertiesHighToLow();
             for (int i = 0; i < properties.size(); i++) {
                 panelLine("  " + (i + 1) + ". " + properties.get(i));
             }
-            panelLine("Pick one to sell face down:");
+            panelLine("Pick a card to play (1 = your best):");
             refresh();
 
             if (!scanner.hasNextInt()) {

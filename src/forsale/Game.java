@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Two phases only: five bidding rounds (4 cards each), then five selling rounds.
+ * Two phases: bidding then selling until all properties are gone. Highest balance wins.
  */
 public class Game {
     public static final int STARTING_CASH_THOUSANDS = 18;
@@ -31,9 +31,8 @@ public class Game {
     public static Game setupFromConsole(ConsoleUI ui) {
         ui.clearPanel();
         ui.println("=== FOR SALE ===");
-        ui.println("4 players, 2 phases, 5 rounds each.");
-        ui.println("Phase 1: bid on 4 cards per round.");
-        ui.println("Phase 2: give a card, win checks.");
+        ui.println("4 players | Phase 1: bid | Phase 2: sell all cards");
+        ui.println("Highest balance at the end wins.");
         ui.logMove("New game");
 
         List<GameParticipant> roster = new ArrayList<>();
@@ -82,9 +81,7 @@ public class Game {
         announceWinner();
     }
 
-    /**
-     * Winner: highest total of Phase 2 checks plus leftover coins from Phase 1.
-     */
+    /** Winner: highest balance (checks won in Phase 2 + coins left). */
     public void announceWinner() {
         List<Player> ranked = new ArrayList<>(getPlayers());
         ranked.sort(Comparator
@@ -95,15 +92,7 @@ public class Game {
         ui.logMove("Final scoring");
         ui.clearPanel();
         ui.println("=== WINNER ===");
-        ui.println("Each check you won in Phase 2 counts toward your total.");
-        ui.println("Winner = most checks + coins combined.");
-
-        Player bestChecks = ranked.stream()
-                .max(Comparator.comparingInt(Player::getCheckTotalThousands))
-                .orElse(ranked.get(0));
-        ui.println();
-        ui.println("Most from checks: " + bestChecks.getName()
-                + " (" + Player.formatMoney(bestChecks.getCheckTotalThousands()) + ")");
+        ui.println("Highest balance wins (checks + coins).");
 
         ui.println();
         for (Player player : ranked) {
@@ -122,15 +111,15 @@ public class Game {
         if (winners.size() == 1) {
             Player w = winners.get(0);
             String msg = "Winner: " + w.getName()
-                    + " with " + Player.formatMoney(w.getCheckTotalThousands()) + " in checks"
-                    + " and " + Player.formatMoney(w.getCash()) + " in coins"
-                    + " (" + Player.formatMoney(topScore) + " total)";
+                    + " with balance " + Player.formatMoney(topScore)
+                    + " (" + Player.formatMoney(w.getCheckTotalThousands()) + " checks, "
+                    + Player.formatMoney(w.getCash()) + " coins)";
             ui.println(msg);
             ui.logMove(msg);
         } else {
-            ui.println("Tie for the win:");
+            ui.println("Tie for highest balance:");
             for (Player player : winners) {
-                ui.println("  " + player.getName());
+                ui.println("  " + player.getName() + " — " + Player.formatMoney(player.getTotalWealthThousands()));
             }
         }
     }

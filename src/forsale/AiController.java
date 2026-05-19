@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * AI for bidding and selling with table-aware heuristics.
+ * AI for bidding and selling. When selling, plays high properties for big checks
+ * and lower properties for small checks (high to low over the phase).
  */
 public class AiController implements PlayerController, SellController {
     private final Random random;
@@ -42,7 +43,6 @@ public class AiController implements PlayerController, SellController {
         int maxForTopCard = fairBidForProperty(highest, tableAvg, bidders);
         int passThreshold = fairBidForProperty(lowest, tableAvg, bidders) + 1;
 
-        // Passing now likely wins the current lowest card — stop if bid is too high for that prize.
         if (committed > 0 && committed >= passThreshold) {
             return -1;
         }
@@ -50,13 +50,11 @@ public class AiController implements PlayerController, SellController {
             return -1;
         }
 
-        // Keep reserves for later rounds in the first half of the game.
         int reserve = cash > 12 ? 4 : (cash > 8 ? 3 : 2);
         if (cash - (minBid - committed) < reserve && highest < 13) {
             return -1;
         }
 
-        // Head-to-head for the top card.
         if (bidders == 2) {
             if (highest < 10) {
                 return -1;
@@ -70,7 +68,6 @@ public class AiController implements PlayerController, SellController {
             return random.nextDouble() < 0.45 ? -1 : minBid;
         }
 
-        // Strong table — compete for the top card.
         if (highest >= 16) {
             if (minBid > maxForTopCard) {
                 return -1;
@@ -78,7 +75,6 @@ public class AiController implements PlayerController, SellController {
             return chooseBidAmount(player, minBid, maxForTopCard, spendable);
         }
 
-        // Weak table — pass unless opening bid is cheap.
         if (highest <= 7) {
             if (minBid == 1 && committed == 0 && tableAvg <= 6 && random.nextDouble() < 0.25) {
                 return 1;
@@ -86,7 +82,6 @@ public class AiController implements PlayerController, SellController {
             return -1;
         }
 
-        // Medium table — bid only if price is fair.
         if (minBid > maxForTopCard) {
             return -1;
         }
@@ -99,9 +94,28 @@ public class AiController implements PlayerController, SellController {
         return chooseBidAmount(player, minBid, maxForTopCard, spendable);
     }
 
-    /**
-     * Rough max bid (in thousands) worth paying for a property of this rank on this table.
-     */
+    @Override
+    public PropertyCard chooseProperty(SellContext context) {
+        List<PropertyCard> hand = context.getPlayer().getPropertiesHighToLow();
+        PropertyCard highest = hand.get(0);
+        PropertyCard lowest = hand.get(hand.size() - 1);
+        int check = context.getCurrentCheckGrands();
+
+        if (context.isFirstCheckInBatch() || check >= 14) {
+            return highest;
+        }
+        if (context.isLastCheckInBatch() || check <= 5) {
+            return lowest;
+        }
+        if (check >= 10) {
+            return hand.get(Math.min(1, hand.size() - 1));
+        }
+        if (check <= 7) {
+            return hand.get(hand.size() - 1);
+        }
+        return hand.get(random.nextInt(hand.size()));
+    }
+
     private int fairBidForProperty(int propertyRank, int tableAvg, int bidders) {
         int base = (propertyRank * 3) / 4;
         int tableBonus = Math.max(0, (tableAvg - propertyRank) / 3);
@@ -143,33 +157,5 @@ public class AiController implements PlayerController, SellController {
             return minBid;
         }
         return target;
-    }
-
-    @Override
-    public PropertyCard chooseProperty(SellContext context) {
-        List<PropertyCard> properties = context.getPlayer().getProperties();
-        int topCheck = context.highestCheckGrands();
-        int bottomCheck = context.lowestCheckGrands();
-
-        PropertyCard best = properties.stream()
-                .max(Comparator.comparingInt(PropertyCard::getValue))
-                .orElseThrow();
-        PropertyCard worst = properties.stream()
-                .min(Comparator.comparingInt(PropertyCard::getValue))
-                .orElseThrow();
-
-        if (topCheck >= 15) {
-            return best;
-        }
-        if (bottomCheck <= 4) {
-            return worst;
-        }
-        if (topCheck >= 10 && random.nextDouble() < 0.75) {
-            return best;
-        }
-        if (random.nextDouble() < 0.4) {
-            return worst;
-        }
-        return properties.get(random.nextInt(properties.size()));
     }
 }
