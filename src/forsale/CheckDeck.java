@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Check deck: two copies of each value 1–20 (matching property ranks).
- * Total value = (1 + 2 + … + 20) × 2 = 420 Grands.
+ * Check deck: two copies of each value 1–10 (matching property ranks).
+ * Total value = (1 + 2 + … + 10) × 2 = 110 Grands.
  */
 public class CheckDeck {
     public static final int COPIES_PER_VALUE = 2;
     public static final int MIN_VALUE = 1;
-    public static final int MAX_VALUE = 20;
+    public static final int MAX_VALUE = 10;
 
     private final List<CheckCard> cards = new ArrayList<>();
     private final Random random;

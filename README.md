@@ -13,17 +13,16 @@ IDE: run `forsale.Main`.
 
 ## Phase 1 — Bidding (5 rounds)
 
-- 4 property cards per round. Bid or pass.
+- 4 property cards per round (one per player). Bid or pass.
+- 20 total property cards (#1–20, higher = more desirable).
 - **Pass:** lowest card + half bid back.
 - **Last bidder:** highest card + full bid paid.
 - End of each round: summary shows **who won which card**.
 - The **auction winner** starts bidding the **next** round.
 
-## Phase 2 — Selling (1 batch per card won)
+## Phase 2 — Selling (5 batches)
 
-The number of **batches** equals the **properties you won** in Phase 1 (usually 5).
-
-For **each batch** (step through one at a time):
+Each player won 5 property cards in Phase 1. For **each batch** (step through one at a time):
 
 1. Four **checks** are dealt (best first).
 2. Each player still holding cards **selects one property** to play.

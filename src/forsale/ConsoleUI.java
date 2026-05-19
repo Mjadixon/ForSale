@@ -16,11 +16,16 @@ public class ConsoleUI {
     private final MoveLog moveLog = new MoveLog(80);
     private final List<String> panelLines = new ArrayList<>();
     private String roundHeader = "For Sale";
+    private RestartListener restartListener;
 
     /** Sets the label on the right column header (phase + round). */
     public void setRoundContext(String label) {
         roundHeader = label;
         logMove(">> " + label);
+    }
+
+    public void setRestartListener(RestartListener listener) {
+        this.restartListener = listener;
     }
 
     public void logMove(String move) {
@@ -72,7 +77,15 @@ public class ConsoleUI {
 
     public String readLineAllowHelp(boolean allowHelp) {
         while (true) {
+            System.out.print("> ");
+            System.out.flush();
             String line = scanner.nextLine().trim();
+            if (line.equalsIgnoreCase("restart")) {
+                if (restartListener != null) {
+                    restartListener.onRestart();
+                }
+                throw new RestartGameException();
+            }
             if (allowHelp && line.equalsIgnoreCase("help")) {
                 GameHelp.showHelpMenu(this);
                 continue;
@@ -351,5 +364,11 @@ public class ConsoleUI {
             return text;
         }
         return text.substring(0, width - 1) + "...";
+    }
+}
+
+class RestartGameException extends RuntimeException {
+    public RestartGameException() {
+        super("Game restart requested");
     }
 }

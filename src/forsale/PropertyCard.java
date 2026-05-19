@@ -1,7 +1,8 @@
 package forsale;
 
 /**
- * A property card used in Phase 1 bidding. Values 1–20; higher is more desirable.
+ * A property card used in Phase 1 bidding. Values 1–20; higher is more
+ * desirable.
  */
 public class PropertyCard implements Comparable<PropertyCard> {
     private final int value;

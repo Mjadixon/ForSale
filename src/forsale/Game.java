@@ -64,7 +64,7 @@ public class Game {
         return new Game(ui, roster, new PropertyDeck());
     }
 
-    public void play() {
+    public void play(RestartListener restartListener) {
         GameHelp.showOverview(ui);
 
         ui.setRoundContext("Game start");
@@ -73,6 +73,8 @@ public class Game {
         for (GameParticipant participant : participants) {
             ui.println("  " + participant.getLabel());
         }
+        ui.println("");
+        ui.println("Type 'restart' anytime to restart the game.");
         ui.pressEnterToContinue();
 
         BiddingPhase bidding = new BiddingPhase(ui, participants, deck);
