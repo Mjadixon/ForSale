@@ -1,6 +1,6 @@
 # For Sale
 
-Console Java game — 4 players, 2 phases, **5 rounds / 5 check batches**. **Highest balance wins.**
+Console Java game — 4 players, 2 phases. **Highest balance wins.**
 
 ## Run
 
@@ -11,39 +11,51 @@ java -cp out forsale.Main
 
 IDE: run `forsale.Main`.
 
-## Goal
-
-**Highest balance** = checks from Phase 2 + coins left from Phase 1.
-
 ## Phase 1 — Bidding (5 rounds)
 
-- 4 property cards per round (higher # = better).
-- Bid or pass until one bidder remains.
-- **Pass:** lowest card + half your bid back.
-- **Last bidder:** highest card + pay full bid.
+- 4 property cards per round. Bid or pass.
+- **Pass:** lowest card + half bid back.
+- **Last bidder:** highest card + full bid paid.
+- End of each round: summary shows **who won which card**.
+- The **auction winner** starts bidding the **next** round.
 
-## Phase 2 — Selling (5 batches)
+## Phase 2 — Selling (1 batch per card won)
 
-Each of the **5 batches**:
+The number of **batches** equals the **properties you won** in Phase 1 (usually 5).
 
-1. **4 checks** on the table (rank 1 = biggest).
-2. Each player **selects one property** they won in Phase 1 (your list is highest → lowest).
-3. All reveal together.
-4. **Rank by property #** — highest wins the top check, 2nd wins the next, etc.
-5. Each check value is **added to that player's balance** (shown as `+ $X,000`).
+For **each batch** (step through one at a time):
+
+1. Four **checks** are dealt (best first).
+2. Each player still holding cards **selects one property** to play.
+3. All **reveal** — ranked by property # (high to low).
+4. **Rank 1** wins the top check, rank 2 the next, etc.
+5. Check amounts are **added to your balance**.
+6. **Press Enter** → go to the **next batch**.
+
+Phase 2 ends when **every batch has been played** and **all property cards are gone**.
 
 ## Commands
 
-| When | Input | Action |
-|------|--------|--------|
-| Setup | `y` / `n` | Human or AI |
-| Bidding | **Enter** | Minimum bid |
-| Bidding | `0` / `pass` | Pass |
-| Bidding | number | Total bid (`3` = $3,000) |
-| Selling | number | Pick property (`1` = your highest) |
-| **Any time** | **help** | Open rules menu, then continue playing |
-| Continue | **Enter** | Next step |
+| Input | Action |
+|--------|--------|
+| **Enter** | Continue / minimum bid |
+| `0` / `pass` | Pass (bidding) |
+| number | Bid total or pick property (`1` = your highest card) |
+| **help** | Rules menu, then return to the game |
+
+## Scoring
+
+Each check you win is **added to your balance** (`balance before -> balance after`).
+
+**Final scores** show:
+- **Checks** — total from Phase 2  
+- **Coins** — left from Phase 1  
+- **TOTAL** — checks + coins (highest wins)
+
+## Restart
+
+After final scores, choose **y** to play again or **n** to quit.
 
 ## Win
 
-Player with the **highest balance** (checks + coins) wins.
+Highest **total balance** on the final scoreboard.

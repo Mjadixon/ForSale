@@ -60,12 +60,17 @@ public class Player {
         return properties.remove(card);
     }
 
-    /** Adds a check earned in Phase 2 (value in Grands). */
-    public void addCheck(int valueThousands) {
+    /**
+     * Adds a check's value to this player's balance (tracked in checks + total wealth).
+     *
+     * @return new total balance after adding this check
+     */
+    public int addCheck(int valueThousands) {
         if (valueThousands < 0) {
             throw new IllegalArgumentException("Check value cannot be negative.");
         }
         checks.add(valueThousands);
+        return getTotalWealthThousands();
     }
 
     public int getCheckTotalThousands() {

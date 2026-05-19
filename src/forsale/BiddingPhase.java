@@ -19,6 +19,7 @@ public class BiddingPhase {
     }
 
     public void play() {
+        ui.setRoundContext("Phase 1 | Bidding");
         ui.logMove("Phase 1: Bidding begins");
         ui.clearPanel();
         ui.println("=== PHASE 1: BIDDING ===");
@@ -26,16 +27,21 @@ public class BiddingPhase {
         ui.println("Start: " + Player.formatMoney(Game.STARTING_CASH_THOUSANDS));
         ui.println("Pass → lowest card, half bid back.");
         ui.println("Last bidder → highest card, full bid.");
+        ui.println("Auction winner starts bidding the next round.");
 
         if (participants.stream().anyMatch(GameParticipant::isHuman)) {
             ui.pressEnterToContinue();
         }
 
+        GameParticipant nextRoundStarter = participants.get(0);
         for (int round = 1; round <= GameRules.BIDDING_ROUNDS; round++) {
-            ui.logMove("— Bid round " + round + "/" + GameRules.BIDDING_ROUNDS + " —");
-            ui.clearPanel();
-            ui.println("=== Bidding round " + round + " of " + GameRules.BIDDING_ROUNDS + " ===");
-            roundRunner.playRound(participants, deck, round);
+            ui.setRoundContext("Phase 1 | Bid round " + round + "/" + GameRules.BIDDING_ROUNDS);
+            nextRoundStarter = roundRunner.playRound(participants, deck, round, nextRoundStarter);
+
+            if (round < GameRules.BIDDING_ROUNDS
+                    && participants.stream().anyMatch(GameParticipant::isHuman)) {
+                ui.pressEnterToContinue();
+            }
         }
 
         ui.logMove("Phase 1 complete");

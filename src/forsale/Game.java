@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Two phases: bidding then selling until all properties are gone. Highest balance wins.
+ * Two phases: bidding then selling. Highest total balance wins.
  */
 public class Game {
     public static final int STARTING_CASH_THOUSANDS = 18;
@@ -29,14 +29,16 @@ public class Game {
     }
 
     public static Game setupFromConsole(ConsoleUI ui) {
+        ui.setRoundContext("Setup");
         ui.clearPanel();
         ui.println("=== FOR SALE ===");
-        ui.println("4 players | Phase 1: bid | Phase 2: sell all cards");
-        ui.println("Highest balance at the end wins.");
+        ui.println("4 players | Phase 1: bid | Phase 2: sell");
+        ui.println("Highest total balance wins.");
         ui.logMove("New game");
 
         List<GameParticipant> roster = new ArrayList<>();
         for (int i = 1; i <= GameRules.PLAYERS; i++) {
+            ui.setRoundContext("Setup | Player " + i + "/" + GameRules.PLAYERS);
             ui.clearPanel();
             ui.println("Player " + i + " of " + GameRules.PLAYERS);
             boolean human = ui.readYesNo("Human player?");
@@ -65,6 +67,7 @@ public class Game {
     public void play() {
         GameHelp.showOverview(ui);
 
+        ui.setRoundContext("Game start");
         ui.clearPanel();
         ui.println("Roster:");
         for (GameParticipant participant : participants) {
@@ -81,7 +84,6 @@ public class Game {
         announceWinner();
     }
 
-    /** Winner: highest balance (checks won in Phase 2 + coins left). */
     public void announceWinner() {
         List<Player> ranked = new ArrayList<>(getPlayers());
         ranked.sort(Comparator
@@ -90,14 +92,7 @@ public class Game {
                 .reversed());
 
         ui.logMove("Final scoring");
-        ui.clearPanel();
-        ui.println("=== WINNER ===");
-        ui.println("Highest balance wins (checks + coins).");
-
-        ui.println();
-        for (Player player : ranked) {
-            ui.showWealthBreakdown(player);
-        }
+        ui.showFinalScores(ranked);
 
         int topScore = ranked.get(0).getTotalWealthThousands();
         List<Player> winners = new ArrayList<>();
@@ -107,13 +102,11 @@ public class Game {
             }
         }
 
-        ui.println();
+        ui.clearPanel();
         if (winners.size() == 1) {
             Player w = winners.get(0);
             String msg = "Winner: " + w.getName()
-                    + " with balance " + Player.formatMoney(topScore)
-                    + " (" + Player.formatMoney(w.getCheckTotalThousands()) + " checks, "
-                    + Player.formatMoney(w.getCash()) + " coins)";
+                    + " — " + Player.formatMoney(topScore) + " total balance";
             ui.println(msg);
             ui.logMove(msg);
         } else {
@@ -122,5 +115,13 @@ public class Game {
                 ui.println("  " + player.getName() + " — " + Player.formatMoney(player.getTotalWealthThousands()));
             }
         }
+    }
+
+    /** @return true if the player wants to play again */
+    public static boolean askPlayAgain(ConsoleUI ui) {
+        ui.setRoundContext("Game over");
+        ui.clearPanel();
+        ui.println("Play another game?");
+        return ui.readYesNo("Restart (y/n)");
     }
 }

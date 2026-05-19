@@ -3,7 +3,8 @@ package forsale;
 import java.util.List;
 
 /**
- * Phase 2: exactly five batches. Each batch ranks properties and awards four checks.
+ * Phase 2: one batch per property won in Phase 1. After each batch, step to the next
+ * until every card has been played and all batches are done.
  */
 public class SellingPhase {
     private final ConsoleUI ui;
@@ -19,35 +20,85 @@ public class SellingPhase {
     }
 
     public void play() {
-        ui.logMove("Phase 2: Selling begins");
+        int totalBatches = countBatchesFromCardsWon(participants);
+
+        ui.setRoundContext("Phase 2 | Selling");
+        ui.logMove("Phase 2: " + totalBatches + " batches (1 per card won)");
         ui.clearPanel();
         ui.println("=== PHASE 2: SELLING ===");
-        ui.println("5 batches of checks (same as 5 bidding rounds).");
-        ui.println("Each batch: 4 checks on the table.");
-        ui.println("Select a property; all reveal.");
-        ui.println("Highest property rank wins the top check, and so on.");
-        ui.println("Check amounts are added to your balance.");
-        ui.println("Highest balance at the end wins.");
+        ui.println("You won properties in Phase 1.");
+        ui.println("Selling batches: " + totalBatches + " (one batch per card you kept).");
+        ui.println("Each batch: 4 checks, pick 1 property, reveal by rank.");
+        ui.println("After each batch -> next batch until all cards are gone.");
+        ui.showPropertiesRemaining(participants);
 
         if (participants.stream().anyMatch(GameParticipant::isHuman)) {
             ui.pressEnterToContinue();
         }
 
-        for (int batch = 1; batch <= GameRules.SELLING_ROUNDS; batch++) {
-            ui.logMove("Sell batch " + batch + "/" + GameRules.SELLING_ROUNDS);
-            roundRunner.playBatch(participants, checkDeck, batch);
+        for (int batch = 1; batch <= totalBatches; batch++) {
+            if (!anyPlayerHasProperties()) {
+                ui.logMove("All property cards sold early (batch " + (batch - 1) + ")");
+                break;
+            }
+            if (checkDeck.remaining() == 0) {
+                ui.logMove("Check deck empty at batch " + batch);
+                break;
+            }
+
+            roundRunner.playBatch(participants, checkDeck, batch, totalBatches);
+
+            if (!anyPlayerHasProperties()) {
+                ui.logMove("All cards played after batch " + batch);
+                break;
+            }
+
+            if (batch < totalBatches) {
+                ui.clearPanel();
+                ui.println("Batch " + batch + " of " + totalBatches + " complete.");
+                ui.showPropertiesRemaining(participants);
+                ui.println();
+                ui.println("Press Enter for the next batch...");
+                if (participants.stream().anyMatch(GameParticipant::isHuman)) {
+                    ui.pressEnterToContinue();
+                }
+            }
         }
 
         ui.logMove("Phase 2 complete");
         ui.clearPanel();
         ui.println("=== SELLING DONE ===");
-        ui.println("Final balances:");
-        for (GameParticipant participant : participants) {
-            ui.showWealthBreakdown(participant.getPlayer());
+        if (anyPlayerHasProperties()) {
+            ui.println("Warning: some property cards were not sold.");
+            ui.showPropertiesRemaining(participants);
+        } else {
+            ui.println("All property cards have been played.");
         }
+        ui.showFinalScores(participants.stream()
+                .map(GameParticipant::getPlayer)
+                .sorted((a, b) -> Integer.compare(b.getTotalWealthThousands(), a.getTotalWealthThousands()))
+                .toList());
 
         if (participants.stream().anyMatch(GameParticipant::isHuman)) {
             ui.pressEnterToContinue();
         }
+    }
+
+    /** Batches = most properties any player still holds at the start of Phase 2. */
+    public static int countBatchesFromCardsWon(List<GameParticipant> participants) {
+        int max = 0;
+        for (GameParticipant participant : participants) {
+            max = Math.max(max, participant.getPlayer().getProperties().size());
+        }
+        return Math.max(max, 1);
+    }
+
+    private boolean anyPlayerHasProperties() {
+        for (GameParticipant participant : participants) {
+            if (participant.getPlayer().hasProperties()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

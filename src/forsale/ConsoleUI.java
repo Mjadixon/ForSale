@@ -6,13 +6,22 @@ import java.util.Scanner;
 
 /**
  * Console UI with a move log on the left and game content on the right.
+ * The right header shows the current phase and round.
  */
 public class ConsoleUI {
     public static final int LOG_WIDTH = 44;
+    public static final int GAME_WIDTH = 42;
 
     private final Scanner scanner = new Scanner(System.in);
     private final MoveLog moveLog = new MoveLog(80);
     private final List<String> panelLines = new ArrayList<>();
+    private String roundHeader = "For Sale";
+
+    /** Sets the label on the right column header (phase + round). */
+    public void setRoundContext(String label) {
+        roundHeader = label;
+        logMove(">> " + label);
+    }
 
     public void logMove(String move) {
         moveLog.add(move);
@@ -51,7 +60,7 @@ public class ConsoleUI {
             String left = i < moves.size() ? truncate(padRight(moves.get(i), LOG_WIDTH), LOG_WIDTH) : padRight("", LOG_WIDTH);
             String right;
             if (i == 0) {
-                right = padRight("-- Game --", 42);
+                right = truncate(padRight(roundHeader, GAME_WIDTH), GAME_WIDTH);
             } else {
                 int bodyIndex = i - 1;
                 right = bodyIndex < panelLines.size() ? panelLines.get(bodyIndex) : "";
@@ -61,9 +70,6 @@ public class ConsoleUI {
         System.out.flush();
     }
 
-    /**
-     * Reads a line; if allowHelp and user types help, opens help menu and reads again.
-     */
     public String readLineAllowHelp(boolean allowHelp) {
         while (true) {
             String line = scanner.nextLine().trim();
@@ -78,13 +84,12 @@ public class ConsoleUI {
     public void pressEnterToContinue() {
         while (true) {
             panelLine("");
-            panelLine("Press Enter to continue (type help for rules)...");
+            panelLine("Press Enter to continue (help for rules)...");
             refresh();
             String line = readLineAllowHelp(true);
             if (line.isEmpty()) {
                 return;
             }
-            logMove("Press Enter to continue");
         }
     }
 
@@ -211,17 +216,6 @@ public class ConsoleUI {
         refresh();
     }
 
-    public void showAllCheckTotals(List<GameParticipant> participants) {
-        panelLine("--- Check earnings ---");
-        for (GameParticipant participant : participants) {
-            Player player = participant.getPlayer();
-            panelLine("  " + player.getName() + ": "
-                    + Player.formatMoney(player.getCheckTotalThousands()));
-        }
-        refresh();
-    }
-
-    /** Coins + checks = full balance for every player. */
     public void showAllBalances(List<GameParticipant> participants) {
         panelLine("--- Balances ---");
         for (GameParticipant participant : participants) {
@@ -229,37 +223,41 @@ public class ConsoleUI {
             panelLine("  " + player.getName() + ": "
                     + Player.formatMoney(player.getTotalWealthThousands())
                     + "  (coins " + Player.formatMoney(player.getCash())
-                    + ", checks " + Player.formatMoney(player.getCheckTotalThousands()) + ")");
+                    + " + checks " + Player.formatMoney(player.getCheckTotalThousands()) + ")");
         }
         refresh();
     }
 
-    public void showPlayerSummary(Player player) {
-        StringBuilder props = new StringBuilder();
-        for (PropertyCard card : player.getProperties()) {
-            if (props.length() > 0) {
-                props.append(", ");
+    public void showPropertiesRemaining(List<GameParticipant> participants) {
+        panelLine("--- Cards left to sell ---");
+        for (GameParticipant participant : participants) {
+            Player player = participant.getPlayer();
+            StringBuilder props = new StringBuilder();
+            for (PropertyCard card : player.getPropertiesHighToLow()) {
+                if (props.length() > 0) {
+                    props.append(", ");
+                }
+                props.append("#").append(card.getValue());
             }
-            props.append(card.getValue());
+            if (props.length() == 0) {
+                props.append("(none)");
+            }
+            panelLine("  " + player.getName() + ": " + props);
         }
-        if (props.length() == 0) {
-            props.append("(none)");
-        }
-        println(player.getName() + " | Coins: " + Player.formatMoney(player.getCash())
-                + " | Props: " + props);
+        refresh();
     }
 
     public PropertyCard readPropertyChoice(Player player, SellContext context) {
         while (true) {
             clearPanel();
-            panelLine("Batch " + context.getBatchNumber() + " of " + GameRules.SELLING_ROUNDS);
+            panelLine("Batch " + context.getBatchNumber() + " of " + context.getTotalBatches());
             panelLine("Checks this batch (rank 1 = best):");
             List<CheckCard> checks = context.getTableChecks();
             for (int i = 0; i < checks.size(); i++) {
                 panelLine("  Rank " + (i + 1) + ": " + checks.get(i));
             }
             panelLine("");
-            panelLine("Your balance: " + Player.formatMoney(player.getTotalWealthThousands()));
+            panelLine("Balance: " + Player.formatMoney(player.getTotalWealthThousands()));
             panelLine("Your properties (pick one to play):");
             List<PropertyCard> properties = player.getPropertiesHighToLow();
             for (int i = 0; i < properties.size(); i++) {
@@ -291,22 +289,49 @@ public class ConsoleUI {
         }
     }
 
-    public void showWealthBreakdown(Player player) {
-        StringBuilder checkList = new StringBuilder();
-        for (int check : player.getChecks()) {
-            if (checkList.length() > 0) {
-                checkList.append(", ");
+    public void showPlayerSummary(Player player) {
+        StringBuilder props = new StringBuilder();
+        for (PropertyCard card : player.getProperties()) {
+            if (props.length() > 0) {
+                props.append(", ");
             }
-            checkList.append(Player.formatMoney(check));
+            props.append(card.getValue());
         }
-        if (checkList.length() == 0) {
-            checkList.append("(none)");
+        if (props.length() == 0) {
+            props.append("(none)");
         }
+        println(player.getName() + " | Coins: " + Player.formatMoney(player.getCash())
+                + " | Props: " + props);
+    }
 
-        println(player.getName() + ":");
-        println("  Checks earned: " + checkList);
-        println("  Coins left:    " + Player.formatMoney(player.getCash()));
-        println("  Balance:       " + Player.formatMoney(player.getTotalWealthThousands()));
+    /** Final scoreboard: checks won + coins = total balance. */
+    public void showFinalScores(List<Player> ranked) {
+        setRoundContext("FINAL SCORES");
+        clearPanel();
+        panelLine("=== FINAL SCORES ===");
+        panelLine("Total balance = coins + all checks won");
+        panelLine("");
+        panelLine(String.format("%-4s %-14s %-12s %-12s %-12s",
+                "#", "Player", "Checks", "Coins", "TOTAL"));
+        panelLine("---- -------------- ------------ ------------ ------------");
+
+        int rank = 1;
+        for (Player player : ranked) {
+            panelLine(String.format("%-4d %-14s %-12s %-12s %-12s",
+                    rank++,
+                    truncateName(player.getName(), 14),
+                    Player.formatMoney(player.getCheckTotalThousands()),
+                    Player.formatMoney(player.getCash()),
+                    Player.formatMoney(player.getTotalWealthThousands())));
+        }
+        refresh();
+    }
+
+    private static String truncateName(String name, int max) {
+        if (name.length() <= max) {
+            return name;
+        }
+        return name.substring(0, max - 1) + ".";
     }
 
     private static void clearScreen() {
