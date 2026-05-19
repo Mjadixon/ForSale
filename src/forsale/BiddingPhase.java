@@ -1,0 +1,55 @@
+package forsale;
+
+import java.util.List;
+
+/**
+ * Phase 1: exactly five rounds, four property cards per round.
+ */
+public class BiddingPhase {
+    private final ConsoleUI ui;
+    private final List<GameParticipant> participants;
+    private final PropertyDeck deck;
+    private final BiddingRound roundRunner;
+
+    public BiddingPhase(ConsoleUI ui, List<GameParticipant> participants, PropertyDeck deck) {
+        this.ui = ui;
+        this.participants = participants;
+        this.deck = deck;
+        this.roundRunner = new BiddingRound(ui);
+    }
+
+    public void play() {
+        ui.logMove("Phase 1: Bidding begins");
+        ui.clearPanel();
+        ui.println("=== PHASE 1: BIDDING ===");
+        ui.println("5 rounds, 4 cards each.");
+        ui.println("Start: " + Player.formatMoney(Game.STARTING_CASH_THOUSANDS));
+        ui.println("Pass → lowest card, half bid back.");
+        ui.println("Last bidder → highest card, full bid.");
+
+        if (participants.stream().anyMatch(GameParticipant::isHuman)) {
+            ui.pressEnterToContinue();
+        }
+
+        for (int round = 1; round <= GameRules.BIDDING_ROUNDS; round++) {
+            ui.logMove("— Bid round " + round + "/" + GameRules.BIDDING_ROUNDS + " —");
+            ui.clearPanel();
+            ui.println("=== Bidding round " + round + " of " + GameRules.BIDDING_ROUNDS + " ===");
+            roundRunner.playRound(participants, deck, round);
+        }
+
+        ui.logMove("Phase 1 complete");
+        ui.clearPanel();
+        ui.println("=== BIDDING DONE ===");
+        ui.println("Bank took: " + Player.formatMoney(roundRunner.getBankedCash()));
+        ui.println();
+        ui.println("Properties won:");
+        for (GameParticipant participant : participants) {
+            ui.showPlayerSummary(participant.getPlayer());
+        }
+
+        if (participants.stream().anyMatch(GameParticipant::isHuman)) {
+            ui.pressEnterToContinue();
+        }
+    }
+}
