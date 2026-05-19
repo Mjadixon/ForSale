@@ -123,7 +123,7 @@ public class Game {
     public static boolean askPlayAgain(ConsoleUI ui) {
         ui.setRoundContext("Game over");
         ui.clearPanel();
-        ui.println("Play another game?");
-        return ui.readYesNo("Restart (y/n)");
+        ui.println("Want to restart game?");
+        return ui.readYesNo("(y/n)");
     }
 }
