@@ -10,11 +10,11 @@ import java.util.List;
 public class Game {
     public static final int STARTING_CASH_THOUSANDS = 18;
 
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
     private final List<GameParticipant> participants;
     private final PropertyDeck deck;
 
-    public Game(ConsoleUI ui, List<GameParticipant> participants, PropertyDeck deck) {
+    public Game(GameDisplay ui, List<GameParticipant> participants, PropertyDeck deck) {
         this.ui = ui;
         this.participants = new ArrayList<>(participants);
         this.deck = deck;
@@ -28,7 +28,7 @@ public class Game {
         return players;
     }
 
-    public static Game setupFromConsole(ConsoleUI ui) {
+    public static Game setupFromConsole(GameDisplay ui) {
         ui.setRoundContext("Setup");
         ui.clearPanel();
         ui.println("=== FOR SALE ===");
@@ -120,7 +120,7 @@ public class Game {
     }
 
     /** @return true if the player wants to play again */
-    public static boolean askPlayAgain(ConsoleUI ui) {
+    public static boolean askPlayAgain(GameDisplay ui) {
         ui.setRoundContext("Game over");
         ui.clearPanel();
         ui.println("Want to restart game?");

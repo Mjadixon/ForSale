@@ -7,15 +7,28 @@ import java.util.Scanner;
 /**
  * Console UI with a move log on the left and game content on the right.
  * The right header shows the current phase and round.
+ * Implements GameDisplay for text-based game rendering.
  */
-public class ConsoleUI {
+public class ConsoleUI implements GameDisplay {
+    /** Width of the move log column (characters) */
     public static final int LOG_WIDTH = 44;
+    
+    /** Width of the game content column (characters) */
     public static final int GAME_WIDTH = 42;
 
+    /** Scanner for reading user input from standard input */
     private final Scanner scanner = new Scanner(System.in);
+    
+    /** Move log tracking user actions and game events for side column display */
     private final MoveLog moveLog = new MoveLog(80);
+    
+    /** Current panel lines to display in right column */
     private final List<String> panelLines = new ArrayList<>();
+    
+    /** Round header/title showing current phase and round (displayed top-right) */
     private String roundHeader = "For Sale";
+    
+    /** Listener invoked when player types 'restart' command */
     private RestartListener restartListener;
 
     /** Sets the label on the right column header (phase + round). */

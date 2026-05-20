@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "forsale.Main",
+            "projectName": "ForSale_97133edf"
+        },
+        {
+            "name": "Launch Main",
+            "type": "java",
+            "request": "launch",
+            "mainClass": "forsale.Main",
+            "projectName": "ForSale",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

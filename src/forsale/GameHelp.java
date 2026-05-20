@@ -62,7 +62,7 @@ public final class GameHelp {
     }
 
     /** Full rules + commands; press Enter to return to the game. */
-    public static void showHelpMenu(ConsoleUI ui) {
+    public static void showHelpMenu(GameDisplay ui) {
         ui.logMove("Help menu opened");
         ui.clearPanel();
         for (String line : overviewLines()) {
@@ -78,11 +78,11 @@ public final class GameHelp {
         ui.readLineAllowHelp(false);
     }
 
-    public static void showOverview(ConsoleUI ui) {
+    public static void showOverview(GameDisplay ui) {
         showHelpMenu(ui);
     }
 
-    public static void showBiddingHelp(ConsoleUI ui) {
+    public static void showBiddingHelp(GameDisplay ui) {
         showHelpMenu(ui);
     }
 

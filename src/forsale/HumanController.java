@@ -6,9 +6,9 @@ import java.util.List;
  * Console input for bidding and selling.
  */
 public class HumanController implements PlayerController, SellController {
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
 
-    public HumanController(ConsoleUI ui) {
+    public HumanController(GameDisplay ui) {
         this.ui = ui;
     }
 

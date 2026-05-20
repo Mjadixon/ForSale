@@ -7,12 +7,12 @@ import java.util.List;
  * until every card has been played and all batches are done.
  */
 public class SellingPhase {
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
     private final List<GameParticipant> participants;
     private final CheckDeck checkDeck;
     private final SellingRound roundRunner;
 
-    public SellingPhase(ConsoleUI ui, List<GameParticipant> participants, CheckDeck checkDeck) {
+    public SellingPhase(GameDisplay ui, List<GameParticipant> participants, CheckDeck checkDeck) {
         this.ui = ui;
         this.participants = participants;
         this.checkDeck = checkDeck;

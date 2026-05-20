@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
  * reveal by rank, award checks to balance. Then Phase 2 advances to the next batch.
  */
 public class SellingRound {
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
 
-    public SellingRound(ConsoleUI ui) {
+    public SellingRound(GameDisplay ui) {
         this.ui = ui;
     }
 

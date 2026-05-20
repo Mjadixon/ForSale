@@ -6,12 +6,12 @@ import java.util.List;
  * Phase 1: exactly five rounds, four property cards per round.
  */
 public class BiddingPhase {
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
     private final List<GameParticipant> participants;
     private final PropertyDeck deck;
     private final BiddingRound roundRunner;
 
-    public BiddingPhase(ConsoleUI ui, List<GameParticipant> participants, PropertyDeck deck) {
+    public BiddingPhase(GameDisplay ui, List<GameParticipant> participants, PropertyDeck deck) {
         this.ui = ui;
         this.participants = participants;
         this.deck = deck;

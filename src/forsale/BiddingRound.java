@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 public class BiddingRound {
     private static final int BID_INCREMENT = 1;
 
-    private final ConsoleUI ui;
+    private final GameDisplay ui;
     private int bankedCash = 0;
 
-    public BiddingRound(ConsoleUI ui) {
+    public BiddingRound(GameDisplay ui) {
         this.ui = ui;
     }
 
