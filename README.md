@@ -5,6 +5,7 @@ Console Java game — 4 players, 2 phases. **Highest balance wins.**
 ## Run
 
 ```bash
+java -cp bin forsale.Main --swing
 javac -d out src/forsale/*.java
 java -cp out forsale.Main
 ```

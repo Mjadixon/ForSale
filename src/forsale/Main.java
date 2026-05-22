@@ -25,8 +25,10 @@ public class Main {
      * @param args Command line arguments (unused)
      */
     public static void main(String[] args) {
-        // Initialize the console UI for displaying game state and reading input
-        ConsoleUI ui = new ConsoleUI();
+        // Initialize UI: use Swing if --swing argument provided, otherwise use console
+        GameDisplay ui = args.length > 0 && args[0].equals("--swing")
+                ? new SwingUI()
+                : new ConsoleUI();
         ui.setRestartListener(createRestartListener());
 
         // Main game loop - continues until player chooses to quit
